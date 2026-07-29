@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Protocolo THOR v8</title>
+<style>
+:root{
+  --bg:#0f0f11;--surface:#1a1a1f;--surface2:#222228;
+  --border:#2e2e38;--border2:#3a3a48;
+  --text:#f0f0f5;--text2:#9090a8;--text3:#5a5a72;
+  --accent:#7c6af7;--accent-dim:#1e1a3a;
+  --green:#3ecf8e;--green-dim:#0a2018;
+  --amber:#f5a623;--amber-dim:#2a1a04;
+  --red:#f04438;--red-dim:#2a0a08;
+  --blue:#38b6ff;--blue-dim:#081828;
+  --purple:#c084fc;--purple-dim:#1a0a28;
+  --r:12px;--rsm:8px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;padding-bottom:90px}
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100}
+.hdr-row{display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:17px;font-weight:700;letter-spacing:-.4px}
+.hdr p{font-size:11px;color:var(--text2);margin-top:2px}
+.hdr-badge{background:var(--accent-dim);color:var(--accent);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:61px;z-index:99}
+.tab{flex:1;padding:11px 6px;font-size:12px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--font)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.sec{display:none;padding:16px}
+.sec.on{display:block}
+.pg{display:grid;gap:8px;margin-bottom:16px}
+.pg2{grid-template-columns:1fr 1fr}
+.pill{padding:10px 12px;border-radius:var(--rsm);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;font-family:var(--font)}
+.pill strong{display:block;color:var(--text);font-size:13px;font-weight:600;margin-bottom:1px}
+.pill.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.pill.on strong{color:var(--accent)}
+.pill.disabled{opacity:.45;cursor:default}
+.slabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px}
+.bcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.bhdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.bico{font-size:20px;flex-shrink:0}
+.binfo{flex:1;min-width:0}
+.bname{font-size:14px;font-weight:600;margin-bottom:2px}
+.bsub{font-size:11px;color:var(--text2)}
+.stag{display:inline-block;font-size:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.chv{color:var(--text3);font-size:13px;transition:transform .2s;flex-shrink:0}
+.chv.op{transform:rotate(180deg)}
+.bbody{display:none;border-top:1px solid var(--border)}
+.bbody.op{display:block}
+.exrow{padding:12px 14px;border-bottom:1px solid var(--border)}
+.exrow:last-child{border-bottom:none}
+.exn{font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.3}
+.exs{font-size:12px;color:var(--text2);margin-bottom:4px}
+.ext{font-size:12px;color:var(--text2);line-height:1.55}
+.prog{font-size:11px;color:var(--purple);margin-top:5px;line-height:1.6;padding:6px 8px;background:var(--purple-dim);border-radius:var(--rsm)}
+.bdg{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:5px;vertical-align:middle}
+.bw{background:var(--amber-dim);color:var(--amber)}
+.ba{background:var(--green-dim);color:var(--green)}
+.bn{background:var(--blue-dim);color:var(--blue)}
+.bpu{background:var(--purple-dim);color:var(--purple)}
+.sem{background:var(--surface2);border-radius:var(--rsm);padding:12px 14px;margin-top:12px;font-size:12px;color:var(--text2);line-height:2}
+.alarm{background:var(--red-dim);border:1px solid var(--red);border-radius:var(--rsm);padding:12px 14px;margin-top:10px;font-size:12px;color:var(--red);line-height:1.7}
+.alert{background:var(--amber-dim);border:1px solid var(--amber);border-radius:var(--rsm);padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--amber);line-height:1.6}
+.info-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.9}
+.info-card strong{color:var(--text)}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.leg span{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px}
+.dtitle{font-size:16px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.dmeta{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7;white-space:pre-line}
+.stretch-block{background:var(--green-dim);border:1px solid var(--green);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.stretch-item{padding:10px 14px;border-bottom:1px solid rgba(62,207,142,.15);font-size:12px;color:var(--text2);line-height:1.5}
+.stretch-item:last-child{border-bottom:none}
+.stretch-item strong{display:block;color:var(--green);font-size:12px;font-weight:600;margin-bottom:2px}
+.fgrp{margin-bottom:14px}
+.flbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:7px;display:block}
+.fsel{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rsm);color:var(--text);font-size:13px;font-family:var(--font);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239090a8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.fsel:focus{outline:none;border-color:var(--accent)}
+.fta{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rsm);color:var(--text);font-size:13px;font-family:var(--font);resize:none;min-height:80px}
+.fta:focus{outline:none;border-color:var(--accent)}
+.exreg{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rsm);padding:12px;margin-bottom:10px}
+.exrn{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)}
+.exf{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.finlbl{font-size:10px;color:var(--text3);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.finp{width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:13px;font-family:var(--font)}
+.finp:focus{outline:none;border-color:var(--accent)}
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.lchdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.ldate{font-size:13px;font-weight:600}
+.lday{font-size:11px;color:var(--text2);margin-top:2px}
+.ldel{font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:4px;font-family:var(--font)}
+.lrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.lchip{font-size:11px;padding:3px 8px;border-radius:20px;background:var(--surface2);color:var(--text2)}
+.lchip.g{background:var(--green-dim);color:var(--green)}
+.lchip.a{background:var(--amber-dim);color:var(--amber)}
+.lchip.r{background:var(--red-dim);color:var(--red)}
+.lchip.p{background:var(--purple-dim);color:var(--purple)}
+.lex{font-size:12px;color:var(--text2);margin-top:8px;border-top:1px solid var(--border);padding-top:8px}
+.lexrow{display:flex;justify-content:space-between;padding:3px 0}
+.lexn{color:var(--text);font-weight:500;max-width:60%}
+.lnotes{font-size:12px;color:var(--text2);margin-top:8px;font-style:italic;line-height:1.5}
+.empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px;line-height:1.8}
+.savebar{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);z-index:200}
+.savebar button{width:100%;padding:14px;border-radius:var(--r);border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.savebar button:active{opacity:.85}
+.toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:13px;font-weight:700;padding:10px 22px;border-radius:20px;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.bsm{padding:7px 14px;border-radius:var(--rsm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)}
+.ptable{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.ptable th{background:var(--surface2);color:var(--text2);font-weight:600;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.ptable td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.ptable tr:last-child td{border-bottom:none}
+.ptable td:first-child{color:var(--accent);font-weight:600}
+.rghdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rghdr h2{font-size:16px;font-weight:700}
+.rdate{font-size:12px;color:var(--text2)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div><h1>Protocolo THOR v8</h1><p>Juan Camilo · 87 kg → 77–82 kg</p></div>
+    <span class="hdr-badge" id="pbadge">Fase 1</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="showTab('rutina',this)">Rutina</button>
+  <button class="tab" onclick="showTab('registro',this)">Registrar</button>
+  <button class="tab" onclick="showTab('historial',this)">Historial</button>
+  <button class="tab" onclick="showTab('progresion',this)">Progresión</button>
+</div>
+
+<div class="sec on" id="tab-rutina">
+  <div class="info-card">
+    📍 <strong>Punto de partida — todos los días en F1</strong><br>
+    Pull (Lunes): <span style="color:var(--green)">Dominadas 4×5 · Remo/jalón con carga actual</span><br>
+    Escápula (Miércoles): <span style="color:var(--green)">Día nuevo · Push-up plus · High row</span><br>
+    Push (Jueves): <span style="color:var(--green)">Press 50 lb · Fondos introducción</span><br>
+    Pierna (Viernes): <span style="color:var(--amber)">Hip thrust · Isquiotibial con criterio</span>
+  </div>
+
+  <div class="slabel">Fase</div>
+  <div class="pg pg2">
+    <button class="pill on" onclick="setPhase('F1',this)"><strong>Fase 1 ← aquí</strong>Punto de partida actual</button>
+    <button class="pill" onclick="setPhase('F2',this)"><strong>Fase 2</strong>Carga progresiva</button>
+    <button class="pill" onclick="setPhase('F3',this)"><strong>Fase 3</strong>Complejidad funcional</button>
+    <button class="pill" onclick="setPhase('F4',this)"><strong>Fase 4</strong>Transferencia deportiva</button>
+  </div>
+
+  <div class="slabel">Día</div>
+  <div class="pg pg2">
+    <button class="pill on" onclick="setDay('A',this)"><strong>Lunes · Pull</strong>Espalda + bíceps + dominadas</button>
+    <button class="pill" onclick="setDay('B',this)"><strong>Miércoles · Escápula</strong>Serrato + trapecio + movilidad</button>
+    <button class="pill" onclick="setDay('C',this)"><strong>Jueves · Push</strong>Pecho + tríceps + deltoides</button>
+    <button class="pill" onclick="setDay('D',this)"><strong>Viernes · Pierna</strong>Glúteo + pierna + core</button>
+  </div>
+
+  <div class="leg">
+    <span><span class="bdg ba">ancla</span> patrón base</span>
+    <span><span class="bdg bn">nuevo</span> aparece en esta fase</span>
+    <span><span class="bdg bw">⚠</span> restricción activa</span>
+    <span><span class="bdg bpu">prog</span> evolución siguiente fase</span>
+  </div>
+
+  <div id="alert-z"></div>
+  <div class="dtitle" id="dtitle"></div>
+  <div class="dmeta" id="dmeta"></div>
+  <div id="blocks"></div>
+
+  <div class="sem">🟢 Sin dolor → continúa &nbsp;·&nbsp; 🟡 Molestia → baja carga &nbsp;·&nbsp; 🔴 Dolor → detén<br>📅 Criterio real: cómo amanece el hombro e isquiotibial al día siguiente</div>
+  <div class="alarm">🚨 Urgencias: dolor inguinal · fiebre >38°C · cojera nueva · hormigueo en pierna · chasquido con pérdida de fuerza</div>
+</div>
+
+<div class="sec" id="tab-registro">
+  <div class="rghdr"><h2>Registrar sesión</h2><span class="rdate" id="rdate"></span></div>
+  <div class="fgrp"><label class="flbl">Día</label>
+    <select class="fsel" id="rday" onchange="renderExFields()">
+      <option value="A">Lunes · Pull</option>
+      <option value="B">Miércoles · Escápula</option>
+      <option value="C">Jueves · Push</option>
+      <option value="D">Viernes · Pierna</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Fase</label>
+    <select class="fsel" id="rphase">
+      <option value="F1">Fase 1</option>
+      <option value="F1" selected>Fase 1 ← actual</option>
+      <option value="F3">Fase 3</option>
+      <option value="F4">Fase 4</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">RPE sentido</label>
+    <select class="fsel" id="rrpe">
+      <option value="">Selecciona...</option>
+      <option>6 — Fácil, buena energía</option>
+      <option>7 — Moderado, activo</option>
+      <option>8 — Duro, pocas reps en reserva</option>
+      <option>9 — Muy duro, 1 rep en reserva</option>
+      <option>10 — Máximo esfuerzo</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Cómo te sentiste</label>
+    <select class="fsel" id="rfeel">
+      <option value="">Selecciona...</option>
+      <option>💪 Con energía y fuerza</option>
+      <option>✅ Normal, bien</option>
+      <option>😴 Cansado pero pude</option>
+      <option>⚡ Piernas pesadas por salsa</option>
+      <option>😰 Muy fatigado, bajo rendimiento</option>
+      <option>🤕 Con molestia (ver notas)</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Hombro izquierdo</label>
+    <select class="fsel" id="rshoulder">
+      <option value="">Selecciona...</option>
+      <option>🟢 Sin molestia</option>
+      <option>🟡 Leve al inicio, luego bien</option>
+      <option>🟡 Molestia controlada</option>
+      <option>🔴 Dolor que obligó a modificar</option>
+      <option>⬜ No aplica hoy</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Cadera / glúteo izquierdo</label>
+    <select class="fsel" id="rhip">
+      <option value="">Selecciona...</option>
+      <option>🟢 Estable, sin punzadas</option>
+      <option>🟡 Leve tensión, no punzada</option>
+      <option>🟡 Punzada breve que remitió</option>
+      <option>🔴 Punzada repetida o intensa</option>
+      <option>⬜ No trabajé cadera hoy</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Isquiotibial izquierdo</label>
+    <select class="fsel" id="rham">
+      <option value="">Selecciona...</option>
+      <option>🟢 Sin molestia</option>
+      <option>🟡 Tensión leve, controlado</option>
+      <option>🔴 Molestia que limitó ejercicio</option>
+      <option>⬜ No trabajé isquiotibial hoy</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Dominadas</label>
+    <select class="fsel" id="rpull">
+      <option value="">No aplica</option>
+      <option>4×3</option><option>4×4</option>
+      <option>4×5 ← punto de partida</option>
+      <option>4×6</option><option>4×7</option><option>4×8</option>
+      <option>Ver notas</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Equilibrio monopodal izq.</label>
+    <select class="fsel" id="rbal">
+      <option value="">No medí</option>
+      <option>Menos de 10 seg</option><option>10–15 seg</option>
+      <option>15–20 seg</option><option>20–30 seg ← punto de partida</option>
+      <option>30–45 seg ✅ meta F2</option><option>Más de 45 seg 🎯</option>
+    </select>
+  </div>
+  <div class="fgrp"><label class="flbl">Cargas por ejercicio</label><div id="exfields"></div></div>
+  <div class="fgrp"><label class="flbl">Notas libres</label>
+    <textarea class="fta" id="rnotes" placeholder="Qué modificaste, cómo fue la salsa después..."></textarea>
+  </div>
+  <div style="height:72px"></div>
+  <div class="savebar"><button onclick="saveSession()">Guardar sesión</button></div>
+</div>
+
+<div class="sec" id="tab-historial">
+  <div class="rghdr"><h2>Historial</h2><button class="bsm" onclick="exportCSV()">Exportar CSV</button></div>
+  <div id="hist"></div>
+</div>
+
+<div class="sec" id="tab-progresion">
+  <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">Progresión por ejercicio</h2>
+  <div class="info-card">
+    La progresión NO es solo más reps del mismo ejercicio.<br>
+    Cada fase introduce movimientos más complejos.<br><br>
+    <strong>Principio:</strong> Domina el patrón → añade complejidad → integra con el baile.
+  </div>
+
+  <div class="slabel">Dominadas · Eje calistenia Pull</div>
+  <table class="ptable">
+    <tr><th>Fase</th><th>Ejercicio</th><th>Series</th></tr>
+    <tr><td>F1 ←</td><td>Dominada neutra 5 rep (punto de partida)</td><td>4 × 5</td></tr>
+    <tr><td>F2</td><td>Dominada neutra 5–6 rep</td><td>4 × 5–6</td></tr>
+    <tr><td>F3</td><td>Dominada neutra 6–7 rep + L-sit</td><td>4 × 6–7</td></tr>
+    <tr><td>F4</td><td>Dominada neutra 7–8 rep lastrado opt.</td><td>4 × 7–8</td></tr>
+  </table>
+
+  <div class="slabel" style="margin-top:14px">Push-up plus · Eje serrato Miércoles</div>
+  <table class="ptable">
+    <tr><th>Fase</th><th>Variante</th><th>Series</th></tr>
+    <tr><td>F1 ←</td><td>Push-up plus en pies (inicio)</td><td>4 × 10</td></tr>
+    <tr><td>F2</td><td>Push-up plus con pausa en protracción</td><td>4 × 12</td></tr>
+    <tr><td>F3</td><td>Push-up plus pies elevados en torre</td><td>4 × 10</td></tr>
+    <tr><td>F4</td><td>Archer push-up (unilateral progresivo)</td><td>4 × 6/lado</td></tr>
+  </table>
+
+  <div class="slabel" style="margin-top:14px">Fondos · Eje tríceps funcional Jueves</div>
+  <table class="ptable">
+    <tr><th>Fase</th><th>Variante</th><th>Series</th></tr>
+    <tr><td>F1 ←</td><td>Fondos rango controlado (introducción)</td><td>3 × 6–8</td></tr>
+    <tr><td>F2</td><td>Fondos rango controlado + carga ↑</td><td>3 × 8</td></tr>
+    <tr><td>F3</td><td>Fondos con tempo 3-1-1</td><td>4 × 8</td></tr>
+    <tr><td>F4</td><td>Fondos lastrados</td><td>4 × 6</td></tr>
+  </table>
+
+  <div class="slabel" style="margin-top:14px">Hip thrust · Eje glúteo Viernes</div>
+  <table class="ptable">
+    <tr><th>Fase</th><th>Variante</th><th>Series</th></tr>
+    <tr><td>F1 ←</td><td>Hip thrust + pausa 2 seg (inicio)</td><td>4 × 12</td></tr>
+    <tr><td>F2</td><td>Hip thrust explosivo + pausa</td><td>4 × 12</td></tr>
+    <tr><td>F3</td><td>Hip thrust unilateral</td><td>4 × 10/lado</td></tr>
+    <tr><td>F4</td><td>Hip thrust unilateral lastrado</td><td>4 × 8/lado</td></tr>
+  </table>
+
+  <div class="slabel" style="margin-top:14px">Criterio para avanzar de fase</div>
+  <div class="bcard" style="padding:14px;font-size:12px;color:var(--text2);line-height:1.9">
+    ✅ Técnica limpia en todos los ejercicios de la fase actual<br>
+    ✅ Sin reagudización de hombro o isquiotibial en 24h<br>
+    ✅ Buena tolerancia en ensayos de salsa post-entrenamiento<br>
+    ✅ Pull F1→F2: dominadas 4×6 limpias<br>
+    ✅ Escápula: push-up plus con pausa dominado<br>
+    ✅ Push F1→F2: press 50 lb con tempo + fondos 3×8<br>
+    ✅ Pierna: hip thrust explosivo y zancada sin compensación<br><br>
+    <span style="color:var(--amber)">⚠ No avanzar por calendario. Avanzar por dominio técnico.</span>
+  </div>
+
+  <div class="slabel" style="margin-top:14px">Objetivo de recomposición</div>
+  <div class="bcard" style="padding:14px;font-size:12px;color:var(--text2);line-height:1.9">
+    Peso actual: <strong>87 kg</strong> &nbsp;·&nbsp; Objetivo: <span style="color:var(--green)">77–82 kg</span><br>
+    Déficit: <strong>400–500 kcal/día</strong> &nbsp;·&nbsp; Proteína: <strong>~170 g/día</strong><br>
+    Ritmo: <strong>0.4–0.5 kg/semana</strong> &nbsp;·&nbsp; Estimado: <span style="color:var(--accent)">20–25 semanas</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DLABELS={A:'Lunes · Pull',B:'Miércoles · Escápula',C:'Jueves · Push',D:'Viernes · Pierna'};
+const PLABELS={F1:'Fase 1',F2:'Fase 2',F3:'Fase 3',F4:'Fase 4'};
+const EXKEYS={
+  A:['Dominadas','Remo polea baja','Jalón al pecho','Curl'],
+  B:['Push-up plus','Remo en Y/W polea','Pull-over','Ejercicio movilidad'],
+  C:['Press mancuerna banco','Apertura mancuerna','Press cable unilateral','Fondos','Extensión tríceps'],
+  D:['Hip thrust','Zancada reversa','RDL','Extensión cuádriceps','Curl femoral']
+};
+
+const STRETCHES={
+  A:[
+    {n:'Pectoral menor en esquina',t:'2 × 30 seg · Brazo a 90°. Mejora tilt posterior escapular.'},
+    {n:'Apertura torácica en banco',t:'2 × 30 seg · Brazos abiertos. Extensión torácica pasiva.'},
+    {n:'Trapecio superior suave',t:'2 × 20 seg/lado · Inclinación lateral de cabeza. Sin forzar.'}
+  ],
+  B:[
+    {n:'Pectoral menor en esquina',t:'2 × 40 seg · Prioridad este día. Evidencia directa: mejora cinemática escapular.'},
+    {n:'Bíceps proximal suave',t:'2 × 20 seg · Brazo detrás, rotación interna leve. ⚠ Solo hasta tensión leve.'},
+    {n:'Rotación torácica en silla',t:'2 × 10 rep/lado · Movilidad activa para figuras de giro.'},
+    {n:'Flexores de cadera en zancada',t:'2 × 30 seg/lado · Pelvis neutra. Para figuras de cadera.'},
+    {n:'Apertura torácica en banco',t:'2 × 40 seg · Clave para hombro adelantado.'}
+  ],
+  C:[
+    {n:'Pectoral menor en esquina',t:'2 × 30 seg · Post-push.'},
+    {n:'Tríceps sobre cabeza',t:'2 × 20 seg/lado · Brazo doblado sobre la cabeza.'},
+    {n:'Apertura torácica en banco',t:'2 × 30 seg · Post-pecho.'},
+    {n:'Trapecio superior',t:'2 × 20 seg/lado · Reduce compensación cervical.'}
+  ],
+  D:[
+    {n:'Isquiotibiales en decúbito con banda',t:'2 × 30 seg/lado · Rodilla 20° flex. Sin rebote. Post-lesión.'},
+    {n:'Pigeon pose modificado',t:'2 × 30 seg/lado · Glúteo profundo. Indicado post-THA.'},
+    {n:'Flexores de cadera en zancada',t:'2 × 30 seg/lado · Para figuras de cadera en salsa.'},
+    {n:'Rotación lumbar suave en decúbito',t:'2 × 10 rep/lado · Descompresión lumbar post-entrenamiento.'}
+  ]
+};
+
+const DATA={
+  A:{
+    title:'Lunes · Pull',
+    meta:{
+      F1:'— No aplica — ya superada antes de jul 2026',
+      F2:'Espalda + bíceps + dominadas · Antes de salsa 6–10pm\nRPE 7–8 · Punto de partida: dominadas 4×5 · Carga +10 lb en polea\nCard: cardio reducido a 15–20 min para llegar fresco a salsa',
+      F3:'Espalda + bíceps + dominadas · Antes de salsa 6–10pm\nRPE 8–9 · Remo unilateral · Jalón con pausa · Curl concentrado\nMovimientos más complejos, menor volumen total',
+      F4:'Espalda + bíceps + dominadas · Antes de salsa 6–10pm\nRPE 8–9 · Máxima complejidad · Cadena cinética integrada\nDominadas 7–8 rep · Face pull con paso atrás'
+    },
+    blocks:{
+      F1:[
+        {icon:'⚡',name:'Activación cadera',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Puente unilateral con pausa 2 seg',s:'2 × 10 rep/lado',t:'Glúteo medio izq. consciente.',a:true},
+          {n:'Paso lateral con banda sobre rodillas',s:'2 × 8 pasos/lado',t:'Pelvis estable.',a:true}
+        ]},
+        {icon:'🏅',name:'Bloque A — Torre · Dominadas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Dominada neutra en barra fija',s:'4 × 5 rep',t:'⚠ Punto de partida real: 4×5 logradas el 21/jul. Excéntrico 3 seg. Escápula activa antes de cada rep.',w:true,a:true,prog:'F2: 4×5–6 rep · F3: 4×6–7 + L-sit · F4: 4×7–8 lastrado'},
+          {n:'Colgado activo en barra',s:'3 × 20 seg',t:'Depresión escapular activa. No pasivo.',a:true,prog:'F2: 25 seg · F3: 30 seg · F4: 35 seg'},
+          {n:'Scap pull-up en barra',s:'3 × 12 rep',t:'Solo depresión escapular. Codo no dobla.',a:true,prog:'F2: 15 rep · F3: reemplazado por L-sit'}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Remo en polea baja con pausa 2 seg',s:'4 × 12 rep',t:'⚠ Pausa al final. Escápula retrae. Bíceps no lidera. Carga actual validada en CSV.',w:true,a:true,prog:'F2: remo con pausa + carga ↑ · F3: remo unilateral · F4: remo unilateral carga máxima'},
+          {n:'Jalón al pecho neutro (carga actual)',s:'4 × 12 rep',t:'⚠ Sin agarre supino. Baja hasta barbilla. Carga del 21/jul como base.',w:true,a:true,prog:'F2: carga ↑ · F3: jalón con pausa · F4: jalón tempo 3-1-1'},
+          {n:'Face pull con cuerda (altura ojos)',s:'4 × 15 rep',t:'Codos arriba. Separar al final. Solo en lunes — no se repite en semana.',a:true,prog:'F4: face pull con paso atrás'}
+        ]},
+        {icon:'💪',name:'Bloque C — Mancuernas · Bíceps',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Curl inclinado en banco (45–60°)',s:'3 × 10 rep',t:'⚠ Agarre neutro en la bajada. Mayor rango que curl martillo. Sin llegar a elongación máxima.',w:true,a:true,prog:'F2: misma variante + carga · F3: curl concentrado unilateral · F4: curl en polea con rotación supina'}
+        ]},
+        {icon:'⬜',name:'Core anti-rotación',sub:'Colchoneta · 10 min · Diferente a los demás días',station:'Colchoneta',ex:[
+          {n:'Dead bug con mancuerna ligera en brazo',s:'3 × 10 rep/lado',t:'Mayor demanda vs dead bug básico. Lumbar pegada siempre.',a:true,prog:'F2: dead bug con banda · F3: dead bug con banda + mancuerna · F4: con pelota medicinal'},
+          {n:'Pallof press con paso lateral (banda en torre)',s:'3 × 8 rep/lado',t:'Paso lateral mientras mantienes el press. Anti-rotación dinámica.',a:true,prog:'F2: Pallof press en semiarrodillado · F3: con rotación de tronco'}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'15–20 min · Reducido — salsa en pocas horas',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'15–20 min',t:'Intensidad conversacional. Prioridad: llegar fresco a la salsa.'}
+        ]}
+      ],
+      F2:[
+        {icon:'⚡',name:'Activación cadera',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Puente unilateral con pausa 2 seg',s:'2 × 10 rep/lado',t:'Glúteo medio izq. consciente.',a:true},
+          {n:'Paso lateral con banda sobre rodillas',s:'2 × 10 pasos/lado',t:'Pelvis estable.',a:true}
+        ]},
+        {icon:'🏅',name:'Bloque A — Torre · Dominadas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Dominada neutra en barra fija',s:'4 × 5–6 rep',t:'⚠ Excéntrico 3 seg. Escápula activa antes de cada rep. Agarre neutro siempre.',w:true,a:true,prog:'F3: 4×6–7 + L-sit rodillas 15 seg · F4: 4×7–8 + L-sit piernas extendidas'},
+          {n:'Colgado activo en barra',s:'3 × 25 seg',t:'Depresión escapular activa entre series.',a:true,prog:'F3: 30 seg · F4: 35 seg'},
+          {n:'Scap pull-up en barra',s:'3 × 12 rep',t:'Solo depresión escapular. Codo no dobla.',a:true,prog:'F3: reemplazado por L-sit · F4: L-sit piernas extendidas'}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Remo en polea baja con pausa 2 seg',s:'4 × 12 rep',t:'⚠ Pausa al final. Escápula retrae. Bíceps no lidera.',w:true,a:true,prog:'F3: remo unilateral en polea · F4: remo unilateral carga máxima'},
+          {n:'Jalón al pecho neutro carga progresada',s:'4 × 12 rep',t:'⚠ Sin agarre supino. Baja hasta barbilla. +10 lb vs mes anterior.',w:true,a:true,prog:'F3: jalón con pausa 2 seg arriba · F4: jalón tempo 3-1-1'},
+          {n:'Face pull con cuerda (altura ojos)',s:'4 × 15 rep',t:'Codos arriba. Separar al final. Solo en lunes — no se repite en semana.',a:true,prog:'F4: face pull con paso atrás (cadena cinética)'}
+        ]},
+        {icon:'💪',name:'Bloque C — Mancuernas · Bíceps',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Curl inclinado en banco (45–60°)',s:'3 × 10 rep',t:'⚠ Agarre neutro en la bajada. Mayor rango y activación que curl martillo. Sin llegar a elongación máxima.',w:true,a:true,prog:'F3: curl concentrado unilateral · F4: curl en polea con rotación supina progresiva'}
+        ]},
+        {icon:'⬜',name:'Core anti-rotación',sub:'Colchoneta · 10 min · Diferente a los demás días',station:'Colchoneta',ex:[
+          {n:'Dead bug con mancuerna ligera en brazo',s:'3 × 10 rep/lado',t:'Mayor demanda vs dead bug básico. Lumbar pegada siempre.',a:true,prog:'F3: dead bug con banda de resistencia · F4: dead bug con pelota medicinal'},
+          {n:'Pallof press con paso lateral (banda en torre)',s:'3 × 8 rep/lado',t:'Paso lateral mientras mantienes el press. Anti-rotación dinámica.',a:true,prog:'F3: Pallof press en semiarrodillado · F4: Pallof press con rotación de tronco'}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'15–20 min · Reducido — salsa en pocas horas',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'15–20 min',t:'Intensidad conversacional. Prioridad: llegar fresco a la salsa.'}
+        ]}
+      ],
+      F3:[
+        {icon:'⚡',name:'Activación cadera',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Monster walk con banda (tobillos)',s:'3 × 10 pasos/lado',t:'Banda en tobillos. Mayor demanda que rodillas.',isnew:true},
+          {n:'Equilibrio monopodal izq.',s:'3 × 30 seg',t:'Meta ≥30 seg ojos abiertos.',a:true}
+        ]},
+        {icon:'🏅',name:'Bloque A — Torre · Dominadas complejas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Dominada neutra en barra fija',s:'4 × 6–7 rep',t:'⚠ Progresión. Mismo excéntrico 3 seg.',w:true,a:true,isnew:true},
+          {n:'Colgado activo en barra',s:'3 × 30 seg',t:'5 seg más.',a:true,isnew:true},
+          {n:'L-sit en paralelas (rodillas dobladas)',s:'3 × 15 seg',t:'Reemplaza scap pull-up. Mayor demanda de serrato + core.',isnew:true,prog:'F4: L-sit piernas extendidas 12 seg'}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Remo unilateral',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Remo unilateral en polea (un brazo)',s:'4 × 10 rep/lado',t:'⚠ Mayor demanda de estabilidad de core que bilateral.',w:true,isnew:true,prog:'F4: remo unilateral carga máxima'},
+          {n:'Jalón al pecho con pausa 2 seg arriba',s:'4 × 10 rep',t:'⚠ Pausa cuando brazos están extendidos. Mayor trabajo excéntrico.',w:true,isnew:true,prog:'F4: jalón tempo 3-1-1'},
+          {n:'Pull-apart con banda en diagonal (arriba a abajo)',s:'4 × 12 rep',t:'Reemplaza face pull en F3. Trapecio inferior + romboides con vector diferente.',isnew:true}
+        ]},
+        {icon:'💪',name:'Bloque C — Mancuernas · Curl concentrado',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Curl concentrado unilateral en banco',s:'3 × 10 rep/lado',t:'⚠ Mayor aislamiento de bíceps. Agarre neutro. Sin supinación extrema.',w:true,isnew:true,prog:'F4: curl en polea con rotación supina progresiva'}
+        ]},
+        {icon:'⬜',name:'Core anti-rotación complejo',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Dead bug con banda de resistencia',s:'3 × 10 rep/lado',t:'Banda en pies. Mayor demanda anti-extensión.',isnew:true},
+          {n:'Pallof press en semiarrodillado',s:'3 × 10 rep/lado',t:'Una rodilla en el suelo. Activa cadena lateral completa.',isnew:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'20 min',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'20 min',t:'Prioridad: llegar fresco a la salsa.'}
+        ]}
+      ],
+      F4:[
+        {icon:'⚡',name:'Activación cadera',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Monster walk con banda (resistencia ↑)',s:'3 × 12 pasos/lado',t:'Banda más resistente.',a:true},
+          {n:'Equilibrio monopodal izq. ojos cerrados',s:'3 × 30 seg',t:'Meta ≥30 seg.',isnew:true}
+        ]},
+        {icon:'🏅',name:'Bloque A — Torre · Dominadas máximas',sub:'Estación única · 4 rondas · Descanso 60 seg',station:'Torre',ex:[
+          {n:'Dominada neutra en barra fija',s:'4 × 7–8 rep',t:'⚠ Máxima progresión. Mismo excéntrico.',w:true,a:true,isnew:true},
+          {n:'Colgado activo en barra',s:'3 × 35 seg',t:'Ancla.',a:true,isnew:true},
+          {n:'L-sit en paralelas (piernas extendidas)',s:'3 × 12 seg',t:'Máxima demanda de serrato y core.',isnew:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Cadena cinética',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Polea',ex:[
+          {n:'Remo unilateral carga máxima',s:'5 × 10 rep/lado',t:'⚠ Una ronda más. Carga máxima del protocolo.',w:true,a:true,isnew:true},
+          {n:'Jalón al pecho con tempo 3-1-1',s:'5 × 8 rep',t:'⚠ Baja 3 seg, pausa 1, sube 1. Mayor tiempo bajo tensión.',w:true,isnew:true},
+          {n:'Face pull con paso atrás',s:'5 × 12 rep',t:'Regresa el face pull con integración de cadena cinética: un paso atrás al tirar. Activa glúteo + trapecio.',isnew:true}
+        ]},
+        {icon:'💪',name:'Bloque C — Curl con rotación progresiva',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Polea',ex:[
+          {n:'Curl en polea baja con rotación supina progresiva',s:'3 × 10 rep',t:'⚠ Empieza neutro en la bajada, rota a supinación solo en la subida. Trabaja ambas porciones del bíceps.',w:true,isnew:true}
+        ]},
+        {icon:'⬜',name:'Core anti-rotación máximo',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Dead bug con pelota medicinal',s:'3 × 10 rep/lado',t:'Pelota entre manos y rodilla. Máxima demanda de estabilización.',isnew:true},
+          {n:'Pallof press con rotación de tronco',s:'3 × 8 rep/lado',t:'Press + rotación controlada. Integración para figuras de giro en salsa.',isnew:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'20 min',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'20 min',t:'Prioridad: llegar fresco a la salsa.'}
+        ]}
+      ]
+    }
+  },
+  B:{
+    title:'Miércoles · Serrato + Escápula + Movilidad',
+    meta:{
+      F1:'Control escapulotorácico · Antes de salsa 6–10pm · RPE 6–7\nDía nuevo — arranca desde F1\nSin face pull (ya fue lunes) · Sin press directo · Protege piernas para salsa',
+      F2:'Control escapulotorácico · Antes de salsa 6–10pm · RPE 7–8\nPush-up plus con pausa · Bear crawl · Remo en Y · Bottoms-up press',
+      F3:'Control escapulotorácico · Antes de salsa 6–10pm · RPE 7–8\nPush-up plus pies elevados · Remo en W · Windmill · Planche lean',
+      F4:'Control escapulotorácico · Antes de salsa 6–10pm · RPE 8–9\nArcher push-up · Turkish get-up parcial · Complejidad máxima'
+    },
+    blocks:{
+      F1:[
+        {icon:'⚡',name:'Activación escapular',sub:'8 min · Torre + colchoneta',station:'Torre + colchoneta',ex:[
+          {n:'Band pull-apart horizontal (banda en torre)',s:'3 × 20 rep',t:'Altura de hombros. Escápulas al centro. Sin elevar hombros.',a:true},
+          {n:'Rotación torácica en cuadrupedia',s:'2 × 10 rep/lado',t:'Mano detrás de cabeza, rota hacia arriba. Movilidad torácica activa.',a:true},
+          {n:'Serratus punch con banda (torre)',s:'3 × 12 rep',t:'Brazo extendido al frente. Empuja escápula activamente al final.',a:true}
+        ]},
+        {icon:'🏛️',name:'Bloque A — Torre · Serrato cadena cerrada',sub:'Estación única · 4 rondas · Descanso 90 seg',station:'Torre',ex:[
+          {n:'Push-up plus en pies',s:'4 × 10 rep',t:'Al final protrae activamente la escápula. Mejor ratio serrato/trapecio superior según evidencia EMG.',a:true,prog:'F2: push-up plus con pausa 2 seg en protracción · F3: pies elevados en torre · F4: archer push-up'},
+          {n:'Push-up hold isométrico',s:'3 × 25 seg',t:'Escápulas activas en fondo. Cuerpo recto. Estabilidad anterior del hombro.',a:true,prog:'F2: 30 seg · F3: planche lean 15 seg · F4: planche lean con oscilación'},
+          {n:'L-sit en paralelas (rodillas dobladas)',s:'3 × 12 seg',t:'Serrato + core + tríceps como soporte funcional.',a:true,prog:'F2: 15 seg · F3: piernas extendidas 12 seg · F4: 15 seg piernas extendidas'}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Trapecio inferior/medio',sub:'Estación única · 4 rondas · Descanso 75 seg · Sin face pull',station:'Polea',ex:[
+          {n:'Remo en polea con codos altos (high row)',s:'4 × 12 rep',t:'Codos a 90° y arriba. Trapecio inferior y medio con vector diferente al remo normal.',a:true,prog:'F2: remo en Y (brazos en diagonal) · F3: remo en W (retracción + rotación externa) · F4: remo en Y unilateral'},
+          {n:'Rotación externa en polea (codo 90°)',s:'3 × 15 rep/lado',t:'⚠ Hombro izq. carga mínima. Manguito rotador.',w:true,a:true,prog:'F2: rotación externa con pausa 2 seg · F3: band pull-apart diagonal · F4: external rotation walk con banda'}
+        ]},
+        {icon:'🟣',name:'Bloque C — Mancuernas · Movilidad torácica activa',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Pull-over en banco plano',s:'3 × 12 rep',t:'⚠ Rango controlado. Activa serrato y dorsal. Sin llevar brazos detrás de la cabeza.',w:true,a:true,prog:'F2: pull-over con rotación torácica · F3: pull-over con extensión de cadera · F4: pull-over en banco inclinado carga ↑'},
+          {n:'Waiter hold bilateral con mancuernas',s:'3 × 30 seg',t:'5–8 lb por lado. Ambas manos. Estabilidad glenohumeral profunda.',a:true,prog:'F2: bottoms-up press bilateral · F3: windmill con mancuerna ligera · F4: Turkish get-up parcial (hasta codo)'}
+        ]},
+        {icon:'⬜',name:'Core anti-lateral · Hollow + Side plank',sub:'Colchoneta · 10 min · Diferente a todos los demás días',station:'Colchoneta',ex:[
+          {n:'Hollow body hold',s:'3 × 20 seg',t:'Lumbar al piso. Progresión hacia hollow body rock.',a:true,prog:'F2: hollow body rock · F3: hollow body con banda · F4: hollow body con pelota medicinal'},
+          {n:'Side plank estático',s:'3 × 25 seg/lado',t:'Cuerpo recto. Sin rotar cadera.',a:true,prog:'F2: side plank con elevación de cadera · F3: side plank con rotación de torso · F4: Copenhagen plank'}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'15 min · Reducido — salsa en pocas horas',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'15 min',t:'Piernas frescas para la salsa. Sin impacto.'}
+        ]}
+      ],
+      F2:[
+        {icon:'⚡',name:'Activación escapular',sub:'8 min · Torre + colchoneta',station:'Torre + colchoneta',ex:[
+          {n:'Band pull-apart horizontal',s:'3 × 20 rep',t:'Ancla.',a:true},
+          {n:'Rotación torácica en cuadrupedia',s:'2 × 12 rep/lado',t:'2 rep más. Ancla.',a:true,isnew:true},
+          {n:'Serratus punch con banda',s:'3 × 15 rep',t:'3 rep más.',a:true,isnew:true}
+        ]},
+        {icon:'🏛️',name:'Bloque A — Torre · Push-up plus con pausa',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Push-up plus con pausa 2 seg en protracción',s:'4 × 12 rep',t:'Pausa al final cuando la escápula está protraída. Mayor tiempo de activación del serrato.',isnew:true,prog:'F3: pies elevados en torre · F4: archer push-up'},
+          {n:'Bear crawl 4 pasos adelante + 4 atrás',s:'3 × 4 ciclos',t:'Rodillas a 2 cm del suelo. Escápulas activas. Integra serrato + core + cadera.',isnew:true,prog:'F3: bear crawl lateral · F4: bear crawl con banda de resistencia'},
+          {n:'L-sit en paralelas (rodillas dobladas)',s:'3 × 15 seg',t:'3 seg más. Ancla.',a:true,isnew:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Remo en Y',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Remo en Y en polea (brazos en diagonal hacia arriba)',s:'4 × 12 rep',t:'Brazos suben en diagonal formando una Y. Trapecio inferior máximo.',isnew:true,prog:'F3: remo en W (Y + rotación externa al final) · F4: remo en Y unilateral'},
+          {n:'Rotación externa en polea con pausa 2 seg',s:'3 × 12 rep/lado',t:'⚠ Pausa en posición de máxima rotación. Hombro izq. carga mínima.',w:true,isnew:true,prog:'F3: band pull-apart diagonal'}
+        ]},
+        {icon:'🟣',name:'Bloque C — Mancuernas · Bottoms-up press',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Pull-over con rotación torácica',s:'3 × 10 rep',t:'⚠ Al final del pull-over, rota el tronco 30° hacia un lado. Activa serrato en rotación.',w:true,isnew:true,prog:'F3: pull-over con extensión de cadera'},
+          {n:'Bottoms-up press bilateral (mancuernas invertidas)',s:'3 × 8 rep',t:'Puño arriba, mancuerna sobre el puño. Activa estabilizadores profundos del hombro. 5–8 lb.',isnew:true,prog:'F3: windmill con mancuerna ligera'}
+        ]},
+        {icon:'⬜',name:'Core · Hollow body rock + Side plank dinámico',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Hollow body rock',s:'3 × 10 rep',t:'Balanceo controlado manteniendo la posición hollow. Progresión desde hold estático.',isnew:true,prog:'F3: hollow body con banda · F4: hollow body con pelota medicinal'},
+          {n:'Side plank con elevación de cadera',s:'3 × 8 rep/lado',t:'Baja la cadera y sube. Anti-lateral dinámico.',isnew:true,prog:'F3: side plank con rotación de torso · F4: Copenhagen plank'}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'15 min · Reducido — salsa en pocas horas',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'15 min',t:'Piernas frescas para la salsa.'}
+        ]}
+      ],
+      F3:[
+        {icon:'⚡',name:'Activación escapular',sub:'8 min · Torre + colchoneta',station:'Torre + colchoneta',ex:[
+          {n:'Band pull-apart horizontal',s:'3 × 20 rep',t:'Ancla.',a:true},
+          {n:'Rotación torácica en cuadrupedia',s:'2 × 12 rep/lado',t:'Ancla.',a:true},
+          {n:'Serratus punch con banda',s:'3 × 15 rep',t:'Ancla.',a:true}
+        ]},
+        {icon:'🏛️',name:'Bloque A — Torre · Pies elevados + Planche lean',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Push-up plus con pies elevados en torre',s:'4 × 10 rep',t:'Mayor demanda de serrato con pies elevados. Centro de gravedad desplazado.',isnew:true,prog:'F4: archer push-up'},
+          {n:'Planche lean isométrico',s:'3 × 15 seg',t:'Manos en paralelas, inclina el cuerpo hacia adelante manteniendo brazos rectos. Activa serrato + pectoral menor.',isnew:true,prog:'F4: planche lean con oscilación'},
+          {n:'L-sit en paralelas (piernas extendidas)',s:'3 × 12 seg',t:'Progresión desde rodillas dobladas. Máxima demanda.',isnew:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Remo en W',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Remo en W en polea (retracción + rotación externa simultánea)',s:'4 × 10 rep',t:'Brazos forman una W: codos arriba y atrás, rotación externa al final. Trapecio inferior + rotadores externos.',isnew:true,prog:'F4: remo en Y unilateral'},
+          {n:'Band pull-apart diagonal (arriba a abajo)',s:'4 × 12 rep',t:'Empieza con brazos arriba, separa hacia abajo. Vector diferente al horizontal. Trapecio inferior.',isnew:true}
+        ]},
+        {icon:'🟣',name:'Bloque C — Windmill con mancuerna',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Pull-over con extensión de cadera en banco',s:'3 × 10 rep',t:'⚠ Al bajar los brazos en pull-over, extiende la cadera levantando la espalda del banco. Integración cadena posterior.',w:true,isnew:true,prog:'F4: pull-over en banco inclinado carga ↑'},
+          {n:'Windmill con mancuerna ligera',s:'3 × 6 rep/lado',t:'Mancuerna arriba, inclínate lateralmente. Activa oblicuos + estabilizadores de hombro + movilidad torácica. 8–12 lb.',isnew:true,prog:'F4: Turkish get-up parcial (hasta codo)'}
+        ]},
+        {icon:'⬜',name:'Core · Hollow body con banda + Side plank con rotación',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Hollow body con banda de resistencia en pies',s:'3 × 20 seg',t:'Banda añade resistencia. Mayor demanda abdominal.',isnew:true,prog:'F4: hollow body con pelota medicinal'},
+          {n:'Side plank con rotación de torso (thread the needle)',s:'3 × 8 rep/lado',t:'Rota el brazo libre bajo el cuerpo. Integración anti-rotación + rotación controlada.',isnew:true,prog:'F4: Copenhagen plank'}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'15 min · Reducido — salsa en pocas horas',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'15 min',t:'Piernas frescas para la salsa.'}
+        ]}
+      ],
+      F4:[
+        {icon:'⚡',name:'Activación escapular',sub:'8 min · Torre + colchoneta',station:'Torre + colchoneta',ex:[
+          {n:'Band pull-apart horizontal',s:'3 × 25 rep',t:'5 rep más. Ancla.',a:true,isnew:true},
+          {n:'Rotación torácica en cuadrupedia',s:'2 × 12 rep/lado',t:'Ancla.',a:true},
+          {n:'Serratus punch con banda',s:'3 × 15 rep',t:'Ancla.',a:true}
+        ]},
+        {icon:'🏛️',name:'Bloque A — Torre · Archer push-up',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Archer push-up (progresión unilateral)',s:'4 × 6 rep/lado',t:'Un brazo empuja mientras el otro se extiende. Progresión hacia push-up a un brazo. Máxima demanda de serrato.',isnew:true},
+          {n:'Planche lean con oscilación',s:'3 × 10 rep',t:'Desde planche lean, oscila hacia adelante y atrás manteniendo la posición.',isnew:true},
+          {n:'L-sit en paralelas (piernas extendidas)',s:'3 × 15 seg',t:'Ancla. Máxima calistenia.',a:true,isnew:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Remo en Y unilateral',sub:'Estación única · 4 rondas · Descanso 60 seg',station:'Polea',ex:[
+          {n:'Remo en Y unilateral en polea',s:'4 × 10 rep/lado',t:'Un brazo en diagonal hacia arriba. Mayor demanda de estabilidad de core.',isnew:true},
+          {n:'External rotation walk con banda',s:'3 × 10 pasos/lado',t:'Banda en muñecas, camina lateralmente manteniendo rotación externa. Integra hombro + cadera.',isnew:true}
+        ]},
+        {icon:'🟣',name:'Bloque C — Turkish get-up parcial',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Mancuernas',ex:[
+          {n:'Pull-over en banco ligeramente inclinado con carga ↑',s:'3 × 10 rep',t:'⚠ Banco 15–20°. Mayor rango de serrato. Carga progresada.',w:true,isnew:true},
+          {n:'Turkish get-up parcial (hasta posición de codo)',s:'3 × 5 rep/lado',t:'Desde decúbito hasta apoyado en codo con mancuerna arriba. Integra hombro + core + cadera en cadena cinética completa. 8–12 lb.',isnew:true}
+        ]},
+        {icon:'⬜',name:'Core · Copenhagen + Hollow body con pelota',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Hollow body con pelota medicinal',s:'3 × 20 seg',t:'Pelota entre manos y rodillas. Máxima integración.',isnew:true},
+          {n:'Copenhagen plank',s:'3 × 20 seg/lado',t:'Pie superior apoyado en banco, cuerpo lateral recto. Mayor demanda que side plank.',isnew:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'15 min · Reducido — salsa en pocas horas',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'15 min',t:'Piernas frescas para la salsa.'}
+        ]}
+      ]
+    }
+  },
+  C:{
+    title:'Jueves · Push — Pecho + tríceps + deltoides',
+    meta:{
+      F1:'— No aplica — ya superada antes de jul 2026',
+      F2:'Pecho + tríceps + deltoides · Sin salsa hoy · RPE 7–8\nPunto de partida: press 50 lb · Fondos nuevos (introducción controlada)\nSin face pull (fue lunes) · Sin rotación externa (fue lunes)',
+      F3:'Pecho + tríceps + deltoides · Sin salsa hoy · RPE 8–9\nPress unilateral · Cable crossover · Fondos con tempo\nComplejidad funcional — integración cadena cinética',
+      F4:'Pecho + tríceps + deltoides · Sin salsa hoy · RPE 8–9\nPress alterno explosivo · Fondos lastrados · Máxima densidad'
+    },
+    blocks:{
+      F1:[
+        {icon:'⚡',name:'Activación',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Scap push-up en pies',s:'3 × 12 rep',t:'Solo protracción/retracción escapular. Activa serrato antes del push.',a:true},
+          {n:'Rotación interna/externa con banda suave',s:'2 × 12 rep/lado',t:'⚠ Hombro izq. sin dolor. Rango libre.',w:true}
+        ]},
+        {icon:'🟣',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Banco + mancuernas',ex:[
+          {n:'Press con mancuerna con tempo 3-1-1',s:'4 × 10 rep',t:'⚠ 50 lb punto de partida real. Baja 3 seg, pausa 1, sube 1. No bajar más allá de línea del pecho.',w:true,a:true,prog:'F2: carga ↑ mismo tempo · F3: press unilateral · F4: press alterno explosivo'},
+          {n:'Apertura con mancuerna con pausa 2 seg en fondo',s:'4 × 12 rep',t:'Pausa cuando brazos están abiertos. Mayor estiramiento controlado.',a:true,prog:'F2: carga ↑ · F3: apertura con rotación · F4: banco declinado'},
+          {n:'Pull-over con mancuerna en banco plano',s:'3 × 12 rep',t:'⚠ Rango controlado. Activa serrato y dorsal.',w:true,a:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Press unilateral en cable (plano escapular)',s:'4 × 10 rep/lado',t:'30–45° adelante del frontal. Control escapular primero.',a:true,prog:'F2: con paso · F3: cable crossover · F4: crossover con paso'},
+          {n:'Extensión de tríceps en polea (cuerda arriba, sobre cabeza)',s:'4 × 12 rep',t:'⚠ Mayor rango de tríceps largo. Hombro izq. sin dolor.',w:true,a:true,prog:'F2: carga ↑ · F3: extensión unilateral · F4: triceps pushdown unilateral'},
+          {n:'Elevación lateral en cable (polea baja)',s:'3 × 12 rep',t:'⚠ 30–45° adelante del plano frontal. Solo hasta línea del hombro.',w:true,a:true,prog:'F2: carga ↑ · F3: sentado · F4: con drop set'}
+        ]},
+        {icon:'🏛️',name:'Bloque C — Torre · Fondos (introducción)',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Torre',ex:[
+          {n:'Fondos en paralelas (rango controlado)',s:'3 × 6–8 rep',t:'⚠ Primera vez en el protocolo. Sin descender más de 90°. Escápulas deprimidas.',w:true,a:true,prog:'F2: 3×8 rep · F3: tempo 3-1-1 · F4: lastrados'},
+          {n:'Push-up hold isométrico',s:'3 × 25 seg',t:'Escápulas activas. Complementa el serrato del miércoles.',a:true,prog:'F2: 30 seg · F3: push-up con tap · F4: push-up explosivo'}
+        ]},
+        {icon:'🔧',name:'Correctivo hombro',sub:'Colchoneta · 8 min · Solo en jueves',station:'Colchoneta',ex:[
+          {n:'Jobe excéntrico (supraespinoso)',s:'3 × 10 rep',t:'Baja lento 4 seg. Sube sin carga. Solo en jueves — no se repite en viernes.',a:true,prog:'F2: 3×12 · F3: 3×12 · F4: variante cargada'},
+          {n:'Waiter hold con mancuerna',s:'3 × 30 seg/lado',t:'5–8 lb. Estabilidad glenohumeral. Solo en jueves.',a:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'25–30 min · Sin salsa hoy',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'25–30 min',t:'Sin salsa hoy. Aprovecha para zona 2 más larga.'}
+        ]}
+      ],
+      F2:[
+        {icon:'⚡',name:'Activación',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Scap push-up en pies',s:'3 × 12 rep',t:'Solo protracción/retracción escapular. Activa serrato antes del push.',a:true},
+          {n:'Rotación interna/externa con banda suave',s:'2 × 12 rep/lado',t:'⚠ Hombro izq. sin dolor. Rango libre.',w:true}
+        ]},
+        {icon:'🟣',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Banco + mancuernas',ex:[
+          {n:'Press con mancuerna con tempo 3-1-1',s:'4 × 10 rep',t:'⚠ 50 lb punto de partida. Baja 3 seg, pausa 1, sube 1. No bajar más allá de línea del pecho.',w:true,a:true,prog:'F3: press unilateral con mancuerna (un brazo) · F4: press alterno explosivo'},
+          {n:'Apertura con mancuerna con pausa 2 seg en fondo',s:'4 × 12 rep',t:'Pausa cuando brazos están abiertos. Mayor estiramiento controlado de pectoral.',a:true,prog:'F3: apertura con rotación interna al bajar · F4: apertura en banco declinado ligero'},
+          {n:'Pull-over con mancuerna en banco plano',s:'3 × 12 rep',t:'⚠ Rango controlado. Activa serrato y dorsal.',w:true,a:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Press unilateral en cable (plano escapular)',s:'4 × 10 rep/lado',t:'30–45° adelante del frontal. Control escapular primero.',a:true,prog:'F3: cable crossover alto a bajo · F4: cable crossover con paso'},
+          {n:'Extensión de tríceps en polea (cuerda arriba, sobre cabeza)',s:'4 × 12 rep',t:'⚠ Cuerda sobre la cabeza. Mayor rango de tríceps largo. Hombro izq. sin dolor.',w:true,a:true,prog:'F3: extensión unilateral con rotación · F4: triceps pushdown unilateral'},
+          {n:'Elevación lateral en cable (polea baja)',s:'3 × 12 rep',t:'⚠ 30–45° adelante del plano frontal. Solo hasta línea del hombro.',w:true,a:true,prog:'F3: elevación lateral sentado · F4: elevación lateral con drop set'}
+        ]},
+        {icon:'🏛️',name:'Bloque C — Torre · Fondos (introducción)',sub:'Estación única · 3 rondas · Descanso 90 seg',station:'Torre',ex:[
+          {n:'Fondos en paralelas (rango controlado)',s:'3 × 8 rep',t:'⚠ Primera vez en el protocolo. Sin descender más de 90°. Escápulas deprimidas.',w:true,a:true,prog:'F3: fondos con tempo 3-1-1 · F4: fondos lastrados'},
+          {n:'Push-up hold isométrico',s:'3 × 30 seg',t:'Escápulas activas. Complementa el serrato del miércoles.',a:true,prog:'F3: push-up con tap de hombro · F4: push-up explosivo'}
+        ]},
+        {icon:'🔧',name:'Correctivo hombro',sub:'Colchoneta · 8 min · Solo en jueves',station:'Colchoneta',ex:[
+          {n:'Jobe excéntrico (supraespinoso)',s:'3 × 10 rep',t:'Baja lento 4 seg. Sube sin carga. Solo en jueves — no se repite en viernes.',a:true,prog:'F3: 3×12 rep · F4: 3×12 + variante excéntrica cargada'},
+          {n:'Waiter hold con mancuerna',s:'3 × 30 seg/lado',t:'5–8 lb. Estabilidad glenohumeral. Solo en jueves.',a:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'25–30 min · Sin salsa hoy',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'25–30 min',t:'Sin salsa hoy. Aprovecha para zona 2 más larga.'}
+        ]}
+      ],
+      F3:[
+        {icon:'⚡',name:'Activación',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Scap push-up en pies',s:'3 × 15 rep',t:'3 rep más. Ancla.',a:true,isnew:true},
+          {n:'Rotación interna/externa con banda',s:'2 × 15 rep/lado',t:'⚠ 3 rep más.',w:true,isnew:true}
+        ]},
+        {icon:'🟣',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Banco + mancuernas',ex:[
+          {n:'Press unilateral con mancuerna (un brazo)',s:'4 × 10 rep/lado',t:'⚠ Un brazo a la vez. Mayor demanda de core para no rotar. Mayor control escapular.',w:true,isnew:true,prog:'F4: press alterno explosivo'},
+          {n:'Apertura con rotación interna al bajar',s:'4 × 10 rep',t:'Rota ligeramente el pulgar hacia abajo al bajar. Activa más fibras medias del pectoral.',isnew:true,prog:'F4: apertura en banco declinado ligero'},
+          {n:'Pull-over con extensión de cadera en banco',s:'3 × 10 rep',t:'⚠ Al bajar los brazos, extiende la cadera. Integración cadena posterior.',w:true,isnew:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Cable crossover',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Polea',ex:[
+          {n:'Cable crossover alto a bajo',s:'4 × 12 rep',t:'Desde arriba hacia abajo cruzando. Fibras inferiores del pectoral.',isnew:true,prog:'F4: cable crossover con paso adelante'},
+          {n:'Extensión de tríceps unilateral con rotación',s:'4 × 10 rep/lado',t:'⚠ Un brazo. Al extender, rota ligeramente el antebrazo. Mayor activación del tríceps largo.',w:true,isnew:true,prog:'F4: triceps pushdown unilateral'},
+          {n:'Press Pallof (press frontal anti-rotación en cable)',s:'3 × 10 rep/lado',t:'Press al frente resistiendo la rotación. Integra pecho + core + cadera.',isnew:true}
+        ]},
+        {icon:'🏛️',name:'Bloque C — Torre · Fondos con tempo',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Fondos en paralelas con tempo 3-1-1',s:'4 × 8 rep',t:'⚠ Baja 3 seg, pausa 1, sube 1. Mayor tiempo bajo tensión. Sin descender más de 90°.',w:true,a:true,isnew:true,prog:'F4: fondos lastrados'},
+          {n:'Push-up con tap de hombro',s:'3 × 8 rep/lado',t:'Push-up + toca hombro opuesto. Anti-rotación activa.',isnew:true,prog:'F4: push-up explosivo con despegue'}
+        ]},
+        {icon:'🔧',name:'Correctivo hombro',sub:'Colchoneta · 8 min',station:'Colchoneta',ex:[
+          {n:'Jobe excéntrico (supraespinoso)',s:'3 × 12 rep',t:'2 rep más. Ancla.',a:true,isnew:true},
+          {n:'Waiter hold con mancuerna',s:'3 × 30 seg/lado',t:'Ancla.',a:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'30 min · Sin salsa hoy',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'30 min',t:'5 min más que F2.'}
+        ]}
+      ],
+      F4:[
+        {icon:'⚡',name:'Activación',sub:'8 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Scap push-up en pies',s:'3 × 18 rep',t:'3 rep más. Ancla.',a:true,isnew:true},
+          {n:'Rotación interna/externa con banda',s:'3 × 15 rep/lado',t:'⚠ Una ronda más.',w:true,isnew:true}
+        ]},
+        {icon:'🟣',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Banco + mancuernas',ex:[
+          {n:'Press alterno explosivo con mancuerna',s:'5 × 6 rep/lado',t:'⚠ Alterna los brazos de forma explosiva. Sube rápido, baja controlado. Potencia de pecho.',w:true,isnew:true},
+          {n:'Apertura en banco declinado ligero (15°)',s:'5 × 12 rep',t:'Banco ligeramente declinado. Fibras inferiores del pectoral.',isnew:true},
+          {n:'Pull-over en banco inclinado con carga ↑',s:'4 × 10 rep',t:'⚠ Banco 15°. Mayor rango. Carga progresada.',w:true,isnew:true}
+        ]},
+        {icon:'🔵',name:'Bloque B — Polea · Crossover con paso',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Polea',ex:[
+          {n:'Cable crossover con paso adelante',s:'5 × 10 rep',t:'Al cruzar los cables, da un paso adelante. Integra cadena cinética completa.',isnew:true},
+          {n:'Triceps pushdown unilateral con rotación de antebrazo',s:'5 × 10 rep/lado',t:'Un brazo. Rota el antebrazo al extender. Máxima activación.',isnew:true},
+          {n:'Press Pallof con paso lateral',s:'4 × 8 rep/lado',t:'Press Pallof + paso lateral. Integración para gestos de salsa.',isnew:true}
+        ]},
+        {icon:'🏛️',name:'Bloque C — Torre · Fondos lastrados',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Torre',ex:[
+          {n:'Fondos lastrados (cinturón o mochila)',s:'4 × 6 rep',t:'⚠ Solo si fondos en F3 fueron sin molestia. Carga extra en cinturón o mochila.',w:true,isnew:true},
+          {n:'Push-up explosivo con despegue',s:'3 × 6 rep',t:'Empuja con suficiente fuerza para que las manos se separen del suelo. Potencia de pecho.',isnew:true}
+        ]},
+        {icon:'🔧',name:'Correctivo hombro',sub:'Colchoneta · 8 min',station:'Colchoneta',ex:[
+          {n:'Jobe excéntrico (supraespinoso)',s:'3 × 12 rep',t:'Ancla.',a:true},
+          {n:'Waiter hold con mancuerna',s:'3 × 30 seg/lado',t:'Ancla.',a:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'30 min · Sin salsa hoy',station:'Cardio',ex:[
+          {n:'Bicicleta estática o elíptica',s:'30 min',t:'Ancla.'}
+        ]}
+      ]
+    }
+  },
+  D:{
+    title:'Viernes · Pierna + glúteo + core',
+    meta:{
+      F1:'Pierna + glúteo · Sin salsa hoy ni mañana · RPE 7–8\n⚠ Isquiotibial izq. con criterio — RDL y curl solo si no hay tensión residual\nUna sesión registrada (19/jul) bien tolerada · Equilibrio: 20–30 seg\nSin Jobe excéntrico (ya fue jueves)',
+      F2:'Pierna + glúteo · Sin salsa hoy ni mañana · RPE 7–8\nHip thrust explosivo · RDL unilateral asistido · Máquinas unilaterales\nEquilibrio meta ≥30 seg',
+      F3:'Pierna + glúteo · Sin salsa hoy ni mañana · RPE 8–9\nHip thrust unilateral · Step-down excéntrico · Equilibrio ojos cerrados\nComplejidad máxima de pierna',
+      F4:'Pierna + glúteo · Sin salsa hoy ni mañana · RPE 8–9\nHip thrust lastrado · Step-down lastrado · Balance reach 3 direcciones\nTransferencia deportiva a salsa cabaret'
+    },
+    blocks:{
+      F1:[
+        {icon:'⚡',name:'Activación protocolo cadera',sub:'15 min · Colchoneta · PRIMERO',station:'Colchoneta',ex:[
+          {n:'Clam shell con banda',s:'3 × 15 rep/lado',t:'Único día completo de clam shell en la semana. Glúteo medio izq.',a:true,prog:'F2: banda más resistente · F3: clam shell con pausa 3 seg · F4: clam shell con banda fuerte + pausa'},
+          {n:'Puente unilateral con pausa 2 seg',s:'3 × 10 rep/lado',t:'Glúteo medio izq. consciente.',a:true,prog:'F2: puente unilateral con carga ligera · F3: puente unilateral explosivo · F4: puente unilateral lastrado'},
+          {n:'Monster walk con banda (rodillas)',s:'2 × 10 pasos/lado',t:'Pelvis estable.',a:true,prog:'F2: banda en tobillos · F3: monster walk diagonal · F4: monster walk con banda fuerte'},
+          {n:'Equilibrio monopodal izq.',s:'3 × 20–30 seg',t:'Ojos abiertos. Registra tu tiempo cada semana.',a:true,prog:'F2: ≥30 seg ojos abiertos · F3: ≥30 seg ojos cerrados · F4: ≥45 seg superficie inestable'}
+        ]},
+        {icon:'🟢',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Banco + mancuernas',ex:[
+          {n:'Hip thrust con mancuerna + pausa 2 seg',s:'4 × 12 rep',t:'Glúteo mayor. Explosivo arriba, controlado abajo. Sin carga axial sobre cadera.',a:true,prog:'F2: hip thrust explosivo sin pausa · F3: hip thrust unilateral · F4: hip thrust unilateral lastrado'},
+          {n:'Zancada reversa con mancuernas (paso corto)',s:'4 × 10 rep/lado',t:'⚠ Paso corto. Sin torsión cadera izq. Carga en manos ≠ carga axial.',w:true,a:true,prog:'F2: carga ↑ · F3: zancada reversa con pausa · F4: zancada reversa con step'},
+          {n:'RDL con mancuernas (bilateral)',s:'4 × 10 rep',t:'⚠ Con criterio: solo si no hay tensión en isquiotibial izq. Sin >80° flexión cadera izq.',w:true,a:true,prog:'F2: RDL unilateral asistido · F3: RDL unilateral libre · F4: RDL unilateral carga máxima'}
+        ]},
+        {icon:'🏗️',name:'Bloque B — Máquinas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Máquinas',ex:[
+          {n:'Extensión de cuádriceps bilateral',s:'4 × 15 rep',t:'Monoarticular. Sin carga sobre cadera.',a:true,prog:'F2: extensión con pausa 2 seg arriba · F3: extensión unilateral · F4: extensión unilateral carga ↑'},
+          {n:'Curl femoral bilateral',s:'4 × 12 rep',t:'⚠ Con criterio: solo si isquiotibial sin molestia.',w:true,a:true,prog:'F2: curl femoral con pausa excéntrica · F3: curl femoral unilateral · F4: curl femoral unilateral excéntrico 4 seg'},
+          {n:'Abducción de cadera en máquina',s:'4 × 15 rep',t:'Evidencia directa post-THA. Glúteo medio bilateral.',a:true,prog:'F2: abducción con pausa 2 seg · F3: abducción + aducción superserie · F4: abducción de pie en polea'}
+        ]},
+        {icon:'🔧',name:'Correctivo estabilidad',sub:'Colchoneta · 10 min · Sin Jobe (ya fue jueves)',station:'Colchoneta',ex:[
+          {n:'Step-up bajo 10–15 cm (sin peso)',s:'3 × 10 rep/pierna',t:'Evitar Trendelenburg. Control pélvico. Sin jobe aquí — ya fue el jueves.',a:true,prog:'F2: step-up con carga leve · F3: step-down excéntrico 4 seg · F4: step-down lastrado'},
+          {n:'Elevación de pantorrilla unilateral',s:'3 × 20 rep/lado',t:'Estabilidad de tobillo para el baile.',a:true,prog:'F2: con pausa 1 seg arriba · F3: single-leg calf raise en superficie inestable · F4: saltado controlado'}
+        ]},
+        {icon:'⬜',name:'Core lateral + anti-extensión',sub:'Colchoneta · 15 min · Diferente a todos los demás días',station:'Colchoneta',ex:[
+          {n:'Side plank estático',s:'3 × 30 seg/lado',t:'Anti-lateral. Diferente al lunes (anti-rotación) y miércoles (hollow body).',a:true,prog:'F2: side plank con elevación de pierna · F3: Copenhagen plank · F4: Copenhagen plank lastrado'},
+          {n:'Dead bug básico',s:'3 × 10 rep/lado',t:'Versión básica aquí — en lunes ya es con mancuerna. Lumbar pegada.',a:true,prog:'F2: dead bug con banda en pies · F3: dead bug con pelota medicinal · F4: dead bug con banda + pelota'},
+          {n:'L-sit en paralelas (rodillas dobladas)',s:'3 × 12 seg',t:'Calistenia. Activa serrato + core.',a:true,prog:'F2: 15 seg · F3: piernas extendidas 12 seg · F4: piernas extendidas 18 seg'}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'25–30 min · Sin salsa hoy ni mañana',station:'Cardio',ex:[
+          {n:'Bicicleta estática',s:'25–30 min',t:'⚠ Si isquiotibial molesta al pedalear → usa elíptica.'}
+        ]}
+      ],
+      F2:[
+        {icon:'⚡',name:'Activación protocolo cadera',sub:'15 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Clam shell con banda mediana',s:'3 × 15 rep/lado',t:'Banda más resistente. Ancla.',a:true,isnew:true},
+          {n:'Puente unilateral con carga ligera',s:'3 × 10 rep/lado',t:'Mancuerna ligera sobre pelvis.',a:true,isnew:true},
+          {n:'Monster walk con banda (tobillos)',s:'2 × 12 pasos/lado',t:'Banda en tobillos. Mayor demanda.',a:true,isnew:true},
+          {n:'Equilibrio monopodal izq.',s:'3 × 30 seg',t:'Meta ≥30 seg ojos abiertos.',a:true,isnew:true}
+        ]},
+        {icon:'🟢',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Banco + mancuernas',ex:[
+          {n:'Hip thrust explosivo sin pausa',s:'4 × 12 rep',t:'Empuje máximo arriba. Sin pausa. Mayor potencia glútea.',isnew:true,prog:'F3: hip thrust unilateral'},
+          {n:'Zancada reversa con mancuernas carga ↑',s:'4 × 12 rep/lado',t:'⚠ 2 rep más y carga progresada.',w:true,a:true,isnew:true},
+          {n:'RDL unilateral asistido (mano libre apoyada en banco)',s:'4 × 10 rep/lado',t:'⚠ Un pie. Mano libre apoya en banco para control. Progresión gradual al unilateral.',w:true,isnew:true,prog:'F3: RDL unilateral libre · F4: RDL unilateral carga máxima'}
+        ]},
+        {icon:'🏗️',name:'Bloque B — Máquinas',sub:'Estación única · 4 rondas · Descanso 75 seg',station:'Máquinas',ex:[
+          {n:'Extensión de cuádriceps con pausa 2 seg arriba',s:'4 × 12 rep',t:'Pausa en extensión completa. Mayor tiempo bajo tensión.',isnew:true,prog:'F3: extensión unilateral'},
+          {n:'Curl femoral con pausa excéntrica 3 seg',s:'4 × 10 rep',t:'⚠ Baja lento en 3 seg. Ancla con criterio isquiotibial.',w:true,isnew:true,prog:'F3: curl femoral unilateral'},
+          {n:'Abducción de cadera con pausa 2 seg',s:'4 × 15 rep',t:'Pausa en máxima abducción. Ancla.',a:true,isnew:true}
+        ]},
+        {icon:'🔧',name:'Correctivo estabilidad',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Step-up con carga leve (5–10 lb)',s:'3 × 10 rep/pierna',t:'Añade carga. Control Trendelenburg prioritario.',a:true,isnew:true},
+          {n:'Elevación de pantorrilla unilateral con pausa 1 seg arriba',s:'3 × 20 rep/lado',t:'Pausa en punta. Mayor demanda.',a:true,isnew:true}
+        ]},
+        {icon:'⬜',name:'Core lateral + anti-extensión',sub:'Colchoneta · 15 min',station:'Colchoneta',ex:[
+          {n:'Side plank con elevación de pierna superior',s:'3 × 8 rep/lado',t:'Eleva la pierna de arriba mientras mantienes el plank.',isnew:true,prog:'F3: Copenhagen plank'},
+          {n:'Dead bug con banda de resistencia en pies',s:'3 × 10 rep/lado',t:'Banda en pies añade resistencia al extender.',isnew:true},
+          {n:'L-sit en paralelas (rodillas dobladas)',s:'3 × 15 seg',t:'3 seg más. Ancla.',a:true,isnew:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'30 min · Sin salsa hoy ni mañana',station:'Cardio',ex:[
+          {n:'Bicicleta estática',s:'30 min',t:'5 min más que F1.'}
+        ]}
+      ],
+      F3:[
+        {icon:'⚡',name:'Activación protocolo cadera',sub:'15 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Clam shell con banda + pausa 3 seg',s:'3 × 12 rep/lado',t:'Pausa en máxima abducción. Mayor tiempo bajo tensión.',isnew:true},
+          {n:'Puente unilateral explosivo',s:'3 × 10 rep/lado',t:'Empuje máximo arriba. Potencia glútea.',isnew:true},
+          {n:'Monster walk diagonal con banda',s:'2 × 10 pasos/lado',t:'Diagonal adelante-atrás. Activa más planos.',isnew:true},
+          {n:'Equilibrio monopodal izq. ojos cerrados',s:'3 × 30 seg',t:'Meta ≥30 seg ojos cerrados.',isnew:true}
+        ]},
+        {icon:'🟢',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Banco + mancuernas',ex:[
+          {n:'Hip thrust unilateral',s:'5 × 10 rep/lado',t:'Una sola pierna. Máxima demanda de glúteo medio + mayor. Ancla.',isnew:true,prog:'F4: hip thrust unilateral lastrado'},
+          {n:'Zancada reversa con pausa 2 seg abajo',s:'5 × 10 rep/lado',t:'⚠ Pausa en la posición baja. Mayor control excéntrico.',w:true,isnew:true},
+          {n:'RDL unilateral libre',s:'5 × 10 rep/lado',t:'⚠ Sin apoyo. Completo control de equilibrio y cadena posterior.',w:true,isnew:true,prog:'F4: RDL unilateral carga máxima'}
+        ]},
+        {icon:'🏗️',name:'Bloque B — Máquinas',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Máquinas',ex:[
+          {n:'Extensión de cuádriceps unilateral',s:'5 × 12 rep/lado',t:'Unilateral para corregir asimetrías.',isnew:true},
+          {n:'Curl femoral unilateral',s:'5 × 10 rep/lado',t:'⚠ Solo si isquiotibial al 100%.',w:true,isnew:true},
+          {n:'Abducción + aducción en superserie',s:'5 × 12 rep cada',t:'Sin descanso entre abducción y aducción. Mayor densidad metabólica.',isnew:true}
+        ]},
+        {icon:'🔧',name:'Correctivo estabilidad',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Step-down excéntrico 4 seg',s:'3 × 8 rep/pierna',t:'Baja el talón al suelo en 4 seg controlando con la pierna de apoyo. Máxima demanda de cuádriceps + glúteo.',isnew:true,prog:'F4: step-down lastrado'},
+          {n:'Elevación de pantorrilla unilateral en superficie inestable',s:'3 × 15 rep/lado',t:'Cojín o toalla doblada bajo el pie.',isnew:true}
+        ]},
+        {icon:'⬜',name:'Core lateral + anti-extensión complejo',sub:'Colchoneta · 15 min',station:'Colchoneta',ex:[
+          {n:'Copenhagen plank',s:'3 × 20 seg/lado',t:'Pie superior apoyado en banco. Mayor demanda que side plank.',isnew:true,prog:'F4: Copenhagen plank lastrado'},
+          {n:'Dead bug con pelota medicinal',s:'3 × 10 rep/lado',t:'Pelota entre manos y rodilla opuesta.',isnew:true},
+          {n:'L-sit en paralelas (piernas extendidas)',s:'3 × 12 seg',t:'Progresión desde rodillas dobladas. Calistenia.',isnew:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'30 min · Sin salsa hoy ni mañana',station:'Cardio',ex:[
+          {n:'Bicicleta estática',s:'30 min',t:'Ancla.'}
+        ]}
+      ],
+      F4:[
+        {icon:'⚡',name:'Activación protocolo cadera',sub:'12 min · Colchoneta',station:'Colchoneta',ex:[
+          {n:'Clam shell con banda fuerte + pausa 3 seg',s:'3 × 12 rep/lado',t:'Banda más resistente. Máxima fase.',isnew:true},
+          {n:'Puente unilateral lastrado + explosivo',s:'3 × 8 rep/lado',t:'Mancuerna sobre pelvis. Empuje máximo.',isnew:true},
+          {n:'Monster walk con banda fuerte',s:'2 × 12 pasos/lado',t:'Máxima resistencia.',isnew:true},
+          {n:'Equilibrio monopodal en superficie inestable',s:'3 × 45 seg',t:'Cojín o bosu. Meta ≥45 seg.',isnew:true}
+        ]},
+        {icon:'🟢',name:'Bloque A — Banco + mancuernas',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Banco + mancuernas',ex:[
+          {n:'Hip thrust unilateral lastrado',s:'5 × 8 rep/lado',t:'Máxima carga del protocolo. Ancla.',isnew:true},
+          {n:'Zancada reversa con step (sube al escalón)',s:'5 × 8 rep/lado',t:'⚠ Zancada reversa + sube al escalón de 10 cm. Transferencia directa a salsa.',w:true,isnew:true},
+          {n:'RDL unilateral carga máxima',s:'5 × 10 rep/lado',t:'⚠ Máxima carga. Misma restricción cadera izq.',w:true,isnew:true}
+        ]},
+        {icon:'🏗️',name:'Bloque B — Máquinas',sub:'Estación única · 5 rondas · Descanso 60 seg',station:'Máquinas',ex:[
+          {n:'Extensión de cuádriceps unilateral carga ↑',s:'5 × 10 rep/lado',t:'Carga máxima. Ancla.',isnew:true},
+          {n:'Curl femoral unilateral excéntrico 4 seg',s:'5 × 8 rep/lado',t:'⚠ Baja en 4 seg. Máxima demanda excéntrica. Solo si isquiotibial al 100%.',w:true,isnew:true},
+          {n:'Abducción de pie en polea (polea baja, de pie)',s:'5 × 15 rep/lado',t:'Mayor demanda funcional que máquina. Transferencia a gestos de baile.',isnew:true}
+        ]},
+        {icon:'🔧',name:'Correctivo estabilidad',sub:'Colchoneta · 10 min',station:'Colchoneta',ex:[
+          {n:'Step-down lastrado (mancuerna ligera)',s:'3 × 8 rep/pierna',t:'Baja en 4 seg con mancuerna. Máxima demanda.',isnew:true},
+          {n:'Balance reach en 3 direcciones (Star excursion)',s:'3 × 5 rep/dirección',t:'Apoyado en un pie, alcanza adelante / lateral / atrás. Transferencia directa a equilibrio en salsa.',isnew:true}
+        ]},
+        {icon:'⬜',name:'Core lateral + anti-extensión máximo',sub:'Colchoneta · 15 min',station:'Colchoneta',ex:[
+          {n:'Copenhagen plank lastrado',s:'3 × 20 seg/lado',t:'Peso en cadera. Máxima demanda lateral.',isnew:true},
+          {n:'Dead bug con banda + pelota medicinal',s:'3 × 10 rep/lado',t:'Banda en pies + pelota entre manos y rodilla. Máxima integración.',isnew:true},
+          {n:'L-sit en paralelas (piernas extendidas)',s:'3 × 18 seg',t:'6 seg más. Calistenia máxima.',isnew:true}
+        ]},
+        {icon:'🚴',name:'Cardio zona 2',sub:'30 min · Sin salsa hoy ni mañana',station:'Cardio',ex:[
+          {n:'Bicicleta estática',s:'30 min',t:'Ancla.'}
+        ]}
+      ]
+    }
+  }
+};
+
+let cPhase='F1', cDay='A', openB={0:true};
+
+function showTab(t,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  btn.classList.add('on');
+  if(t==='registro') initReg();
+  if(t==='historial') renderHist();
+}
+function setPhase(p,btn){
+  cPhase=p;
+  document.querySelectorAll('.pg:nth-of-type(1) .pill').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('pbadge').textContent={F1:'Fase 1',F2:'Fase 2',F3:'Fase 3',F4:'Fase 4'}[p];
+  openB={0:true};renderDay();
+}
+function setDay(d,btn){
+  cDay=d;
+  document.querySelectorAll('.pg:nth-of-type(2) .pill').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  openB={0:true};renderDay();
+}
+function toggleB(i){openB[i]=!openB[i];renderDay();}
+function toggleStretch(){openB['st']=!openB['st'];renderDay();}
+
+function renderDay(){
+  const day=DATA[cDay],blocks=day.blocks[cPhase],meta=day.meta[cPhase];
+  document.getElementById('dtitle').textContent=day.title;
+  document.getElementById('dmeta').textContent=meta;
+  const az=document.getElementById('alert-z');
+  let alertHtml='';
+  if(cDay==='D'&&cPhase==='F1') alertHtml='<div class="alert">⚠ Isquiotibial izq. con criterio: RDL y curl solo si no hay tensión residual. Sin Jobe excéntrico hoy — ya fue el jueves.</div>';
+  az.innerHTML=alertHtml;
+
+  let html=blocks.map((bl,i)=>{
+    const isO=openB[i];
+    const exH=bl.ex.map(e=>`
+      <div class="exrow">
+        <div class="exn">${e.n}
+          ${e.w?'<span class="bdg bw">⚠</span>':''}
+          ${e.a?'<span class="bdg ba">ancla</span>':''}
+          ${e.isnew?'<span class="bdg bn">nuevo</span>':''}
+        </div>
+        <div class="exs">${e.s}</div>
+        <div class="ext">${e.t}</div>
+        ${e.prog?`<div class="prog">📈 Próximas fases: ${e.prog}</div>`:''}
+      </div>`).join('');
+    return `<div class="bcard">
+      <div class="bhdr" onclick="toggleB(${i})">
+        <span class="bico">${bl.icon}</span>
+        <div class="binfo">
+          <div class="bname">${bl.name}${bl.station?`<span class="stag">${bl.station}</span>`:''}</div>
+          <div class="bsub">${bl.sub}</div>
+        </div>
+        <span class="chv ${isO?'op':''}">▾</span>
+      </div>
+      <div class="bbody ${isO?'op':''}">${exH}</div>
+    </div>`;
+  }).join('');
+
+  const st=STRETCHES[cDay];
+  if(st){
+    const stO=openB['st'];
+    html+=`<div class="stretch-block">
+      <div class="bhdr" onclick="toggleStretch()">
+        <span class="bico">🧘</span>
+        <div class="binfo"><div class="bname" style="color:var(--green)">Estiramiento bailarín</div><div class="bsub">Al final de la sesión · Buenas prácticas para danza</div></div>
+        <span class="chv ${stO?'op':''}">▾</span>
+      </div>
+      <div class="bbody ${stO?'op':''}">
+        ${st.map(s=>`<div class="stretch-item"><strong>🧘 ${s.n}</strong>${s.t}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('blocks').innerHTML=html;
+}
+
+function initReg(){
+  document.getElementById('rdate').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  renderExFields();
+}
+function renderExFields(){
+  const d=document.getElementById('rday').value||'A';
+  const keys=EXKEYS[d]||[];
+  document.getElementById('exfields').innerHTML=keys.map(k=>`
+    <div class="exreg">
+      <div class="exrn">${k}</div>
+      <div class="exf">
+        <div><div class="finlbl">Carga (lb/kg)</div><input class="finp" type="text" placeholder="ej. 50 lb" id="ec_${k.replace(/\W/g,'_')}"></div>
+        <div><div class="finlbl">Estado</div>
+          <select class="finp" id="ek_${k.replace(/\W/g,'_')}">
+            <option>✅ Completo</option><option>⚡ Reducido</option><option>⏭ Saltado</option>
+          </select>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function saveSession(){
+  const d=document.getElementById('rday').value;
+  const keys=EXKEYS[d]||[];
+  const exs=keys.map(k=>({name:k,carga:document.getElementById('ec_'+k.replace(/\W/g,'_'))?.value||'',comp:document.getElementById('ek_'+k.replace(/\W/g,'_'))?.value||''}));
+  const s={id:Date.now(),date:new Date().toISOString(),day:d,
+    phase:document.getElementById('rphase').value,
+    rpe:document.getElementById('rrpe').value,
+    feel:document.getElementById('rfeel').value,
+    shoulder:document.getElementById('rshoulder').value,
+    hip:document.getElementById('rhip').value,
+    ham:document.getElementById('rham').value,
+    pull:document.getElementById('rpull').value,
+    bal:document.getElementById('rbal').value,
+    notes:document.getElementById('rnotes').value,
+    exercises:exs
+  };
+  const logs=JSON.parse(localStorage.getItem('thor_v8_logs')||'[]');
+  logs.unshift(s);
+  localStorage.setItem('thor_v8_logs',JSON.stringify(logs));
+  showToast('✓ Sesión guardada');
+  ['rrpe','rfeel','rshoulder','rhip','rham','rpull','rbal','rnotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderExFields();
+}
+function renderHist(){
+  const logs=JSON.parse(localStorage.getItem('thor_v8_logs')||'[]');
+  const c=document.getElementById('hist');
+  if(!logs.length){c.innerHTML='<div class="empty">Aún no hay sesiones registradas.<br><br>Completa tu próximo entrenamiento<br>y registra cómo te fue.</div>';return;}
+  c.innerHTML=logs.map(s=>{
+    const d=new Date(s.date);
+    const ds=d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
+    const ts=d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    const fc=s.feel?.includes('💪')||s.feel?.includes('✅')?'g':s.feel?.includes('🤕')||s.feel?.includes('😰')?'r':'a';
+    const exH=(s.exercises||[]).filter(e=>e.carga).map(e=>`<div class="lexrow"><span class="lexn">${e.name}</span><span>${e.carga} · ${e.comp}</span></div>`).join('');
+    return `<div class="lcard">
+      <div class="lchdr">
+        <div><div class="ldate">${ds} · ${ts}</div><div class="lday">${DLABELS[s.day]||s.day} · ${PLABELS[s.phase]||s.phase}</div></div>
+        <button class="ldel" onclick="delLog(${s.id})">✕</button>
+      </div>
+      <div class="lrow">
+        ${s.rpe?`<span class="lchip a">RPE ${s.rpe}</span>`:''}
+        ${s.feel?`<span class="lchip ${fc}">${s.feel}</span>`:''}
+      </div>
+      <div class="lrow">
+        ${s.shoulder&&!s.shoulder.includes('⬜')?`<span class="lchip">🦴 ${s.shoulder}</span>`:''}
+        ${s.hip&&!s.hip.includes('⬜')?`<span class="lchip">🏃 ${s.hip}</span>`:''}
+        ${s.ham&&!s.ham.includes('⬜')?`<span class="lchip">🦵 ${s.ham}</span>`:''}
+      </div>
+      <div class="lrow">
+        ${s.pull&&s.pull!==''?`<span class="lchip g">🏅 ${s.pull}</span>`:''}
+        ${s.bal&&s.bal!==''?`<span class="lchip p">⚖️ ${s.bal}</span>`:''}
+      </div>
+      ${exH?`<div class="lex">${exH}</div>`:''}
+      ${s.notes?`<div class="lnotes">"${s.notes}"</div>`:''}
+    </div>`;
+  }).join('');
+}
+function delLog(id){
+  if(!confirm('¿Borrar esta sesión?'))return;
+  const logs=JSON.parse(localStorage.getItem('thor_v8_logs')||'[]').filter(s=>s.id!==id);
+  localStorage.setItem('thor_v8_logs',JSON.stringify(logs));renderHist();
+}
+function exportCSV(){
+  const logs=JSON.parse(localStorage.getItem('thor_v8_logs')||'[]');
+  if(!logs.length){showToast('No hay datos aún');return;}
+  const rows=[['Fecha','Día','Fase','RPE','Sensación','Hombro','Cadera','Isquiotibial','Dominadas','Equilibrio','Notas']];
+  logs.forEach(s=>rows.push([new Date(s.date).toLocaleDateString('es-CO'),DLABELS[s.day]||s.day,PLABELS[s.phase]||s.phase,s.rpe||'',s.feel||'',s.shoulder||'',s.hip||'',s.ham||'',s.pull||'',s.bal||'',(s.notes||'').replace(/,/g,';')]));
+  const csv=rows.map(r=>r.map(x=>`"${x}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='thor_v8_entrenamiento.csv';a.click();
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+document.addEventListener('DOMContentLoaded',()=>{renderDay();initReg();});
+</script>
+</body>
+</html>
